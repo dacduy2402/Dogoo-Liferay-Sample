@@ -1,0 +1,11 @@
+dependencies {
+	compile project(":modules:miniblog-service:miniblog-service-api")
+
+	compileOnly group: "com.liferay.portal", name: "release.portal.api"
+}
+
+buildService {
+	apiDir = "../miniblog-service-api/src/main/java"
+}
+
+group = "com.dogoo.intern.service"

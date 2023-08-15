@@ -1,0 +1,9 @@
+apiDir: "../miniblog-rest-api/src/main/java"
+apiPackagePath: "com.dogoo.intern.rest"
+application:
+    baseURI: "/miniblog-rest"
+    className: "MiniblogRestApplication"
+    name: "MiniblogRest"
+author: "duynd"
+clientDir: "../miniblog-rest-client/src/main/java"
+testDir: "../miniblog-rest-test/src/testIntegration/java"

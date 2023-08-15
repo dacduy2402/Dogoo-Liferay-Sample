@@ -1,0 +1,5 @@
+Bundle-Name: miniblog-rest-test
+Bundle-SymbolicName: com.dogoo.intern.rest.test
+Bundle-Version: 1.0.0
+-includeresource: com.dogoo.intern.rest.client.jar=../miniblog-rest-client/build/libs/com.dogoo.intern.rest.client-1.0.0.jar;lib:=true
+#-provider-policy: ${replacestring;${range;[==,==]};.*,(.*)];$1}

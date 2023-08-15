@@ -1,0 +1,11 @@
+Bundle-Name: miniblog-service-api
+Bundle-SymbolicName: com.dogoo.intern.service.api
+Bundle-Version: 1.0.0
+Export-Package:\
+	com.dogoo.intern.service.exception,\
+	com.dogoo.intern.service.model,\
+	com.dogoo.intern.service.service,\
+	com.dogoo.intern.service.mapper.model,\
+	com.dogoo.intern.service.service.persistence
+-check: EXPORTS
+-includeresource: META-INF/service.xml=../miniblog-service-service/service.xml

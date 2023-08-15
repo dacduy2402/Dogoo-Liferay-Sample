@@ -1,0 +1,249 @@
+components:
+    schemas:
+        Blog:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: int64
+                    readOnly: true
+                    example: 12
+                title:
+                    type: string
+                    example: travel with me
+                image:
+                    type: string
+                    example: https://media-cdn-v2.laodong.vn/storage/newsportal/2021/8/19/943822/Google-6.jpg?w=800&crop=auto&scale=both
+                shortDescription:
+                    type: string
+                    example: a summary about blog
+                longDescription:
+                    type: string
+                    example: it is a content in blog
+                createdDate:
+                    type: string
+                    format: date
+                    example: 2023-05-23
+        Contact:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: int64
+                    readOnly: true
+                    example: 10
+                name:
+                    type: string
+                    example: duy nguyen
+                email:
+                    type: string
+                    example: duy123@gmail.com
+                message:
+                    type: string
+                    example: xin chao
+info:
+    description: ""
+    license:
+        name: "Apache 2.0"
+        url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+    title: "My API"
+    version: v2.0
+openapi: 3.0.1
+paths:
+    /blogs:
+        get:
+            tags:
+                - Blog
+            summary: Return a list of blog
+            description: Get all blog
+            operationId: getBlogs
+            responses:
+                200:
+                    description: successful operation
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: '#/components/schemas/Blog'
+                        application/xml:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: '#/components/schemas/Blog'
+                400:
+                    description: Invalid status value
+            # security:
+            #   - api_key: []
+        post:
+            operationId: addBlog
+            tags:
+                - Blog
+            summary: AddBlog
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/Blog'
+                    application/xml:
+                        schema:
+                            $ref: '#/components/schemas/Blog'
+            responses:
+                200:
+                    description: Successful operation
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Blog'
+                        application/xml:
+                            schema:
+                                $ref: '#/components/schemas/Blog'
+            # security:
+            #   - api_key: []
+    /blogs/{id}:
+        get:
+            tags:
+                - Blog
+            summary: Return detail of blog by id
+            description: Get detail blog by id
+            operationId: getBlog
+            parameters:
+                - name: id
+                  in: path
+                  description: ID of blog to get
+                  required: true
+                  schema:
+                      type: integer
+                      format: int64
+            responses:
+                200:
+                    description: successful operation
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Blog'
+                        application/xml:
+                            schema:
+                                $ref: '#/components/schemas/Blog'
+                400:
+                    description: Invalid id value
+                404:
+                    description: blog not found
+                      # security:
+                    #   - api_key: []
+        put:
+            tags:
+                - Blog
+            summary: Update an existing blog
+            description: Update an existing blog by Id
+            operationId: putBlog
+            parameters:
+                - name: id
+                  in: path
+                  description: ID of blog to get
+                  required: true
+                  schema:
+                      type: integer
+                      format: int64
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/Blog'
+                    application/xml:
+                        schema:
+                            $ref: '#/components/schemas/Blog'
+            responses:
+                200:
+                    description: Successful operation
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Blog'
+                        application/xml:
+                            schema:
+                                $ref: '#/components/schemas/Blog'
+                400:
+                    description: Invalid ID supplied
+                404:
+                    description: todo not found
+                405:
+                    description: Validation exception
+            # security:
+            #   - api_key: []
+        delete:
+            tags:
+                - Blog
+            summary: Deletes a blog
+            description: delete a blog
+            operationId: deleteBlog
+            parameters:
+                - name: id
+                  in: path
+                  description: blog id to delete
+                  required: true
+                  schema:
+                      type: integer
+                      format: int64
+            responses:
+                400:
+                    description: Invalid department value
+                404:
+                    description: blog not found
+            # security:
+            #   - api_key: []
+    /contacts:
+        get:
+            tags:
+                - Contact
+            summary: Return a list of  contact
+            description: Get all contact
+            operationId: getContacts
+            responses:
+                200:
+                    description: successful operation
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: '#/components/schemas/Contact'
+                        application/xml:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: '#/components/schemas/Contact'
+                400:
+                    description: Invalid status value
+            # security:
+            #   - api_key: []
+        post:
+            tags:
+                - Contact
+            summary: Add a new contact to author
+            description: Add a new contact to author
+            operationId: addContact
+            requestBody:
+                description: Create a new contact to author
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/Contact'
+                    application/xml:
+                        schema:
+                            $ref: '#/components/schemas/Contact'
+                required: true
+            responses:
+                200:
+                    description: Successful operation
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Contact'
+                        application/xml:
+                            schema:
+                                $ref: '#/components/schemas/Contact'
+                405:
+                    description: Invalid input
+            # security:
+            #   - api_key: []
