@@ -2,6 +2,7 @@ package com.dogoo.intern.rest.resource.v2_0;
 
 import com.dogoo.intern.rest.dto.v2_0.Blog;
 
+import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.search.filter.Filter;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.ResourceActionLocalService;
@@ -11,6 +12,7 @@ import com.liferay.portal.odata.filter.ExpressionConvert;
 import com.liferay.portal.odata.filter.FilterParserProvider;
 import com.liferay.portal.vulcan.accept.language.AcceptLanguage;
 import com.liferay.portal.vulcan.pagination.Page;
+import com.liferay.portal.vulcan.pagination.Pagination;
 
 import java.util.Collections;
 import java.util.List;
@@ -57,6 +59,10 @@ public interface BlogResource {
 	public Blog putBlog(Long id, Blog blog) throws Exception;
 
 	public Response putBlogBatch(Long id, String callbackURL, Object object)
+		throws Exception;
+
+	public Page<Blog> getAllSearch(
+			String search, Filter filter, Pagination pagination, Sort[] sorts)
 		throws Exception;
 
 	public default void setContextAcceptLanguage(

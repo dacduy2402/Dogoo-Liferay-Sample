@@ -129,7 +129,7 @@ paths:
                     description: Invalid id value
                 404:
                     description: blog not found
-                      # security:
+                    # security:
                     #   - api_key: []
         put:
             tags:
@@ -247,3 +247,47 @@ paths:
                     description: Invalid input
             # security:
             #   - api_key: []
+    /search:
+        get:
+            tags:
+                - Blog
+            summary: Return a list of blog after search
+            description: Get all blog search
+            operationId: getAllSearch
+            parameters:
+                - in: query
+                  name: filter
+                  schema:
+                      type: string
+                - in: query
+                  name: page
+                  schema:
+                      type: integer
+                - in: query
+                  name: pageSize
+                  schema:
+                      type: integer
+                - in: query
+                  name: search
+                  schema:
+                      type: string
+                - in: query
+                  name: sort
+                  schema:
+                      type: string
+            responses:
+                200:
+                    description: successful operation
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: '#/components/schemas/Blog'
+                        application/xml:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: '#/components/schemas/Blog'
+                400:
+                    description: Invalid status value

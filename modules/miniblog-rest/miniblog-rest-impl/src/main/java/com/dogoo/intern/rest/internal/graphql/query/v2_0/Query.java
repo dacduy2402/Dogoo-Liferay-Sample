@@ -15,6 +15,7 @@ import com.liferay.portal.vulcan.accept.language.AcceptLanguage;
 import com.liferay.portal.vulcan.graphql.annotation.GraphQLField;
 import com.liferay.portal.vulcan.graphql.annotation.GraphQLName;
 import com.liferay.portal.vulcan.pagination.Page;
+import com.liferay.portal.vulcan.pagination.Pagination;
 
 import java.util.Map;
 import java.util.function.BiFunction;
@@ -75,6 +76,30 @@ public class Query {
 			_blogResourceComponentServiceObjects,
 			this::_populateResourceContext,
 			blogResource -> blogResource.getBlog(id));
+	}
+
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {allSearch(filter: ___, page: ___, pageSize: ___, search: ___, sorts: ___){items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
+	 */
+	@GraphQLField(description = "Get all blog search")
+	public BlogPage allSearch(
+			@GraphQLName("search") String search,
+			@GraphQLName("filter") String filterString,
+			@GraphQLName("pageSize") int pageSize,
+			@GraphQLName("page") int page,
+			@GraphQLName("sort") String sortsString)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_blogResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			blogResource -> new BlogPage(
+				blogResource.getAllSearch(
+					search, _filterBiFunction.apply(blogResource, filterString),
+					Pagination.of(page, pageSize),
+					_sortsBiFunction.apply(blogResource, sortsString))));
 	}
 
 	/**

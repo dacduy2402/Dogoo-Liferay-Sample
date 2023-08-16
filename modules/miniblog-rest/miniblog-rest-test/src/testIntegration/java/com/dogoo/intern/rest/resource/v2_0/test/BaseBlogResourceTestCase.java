@@ -3,6 +3,7 @@ package com.dogoo.intern.rest.resource.v2_0.test;
 import com.dogoo.intern.rest.client.dto.v2_0.Blog;
 import com.dogoo.intern.rest.client.http.HttpInvoker;
 import com.dogoo.intern.rest.client.pagination.Page;
+import com.dogoo.intern.rest.client.pagination.Pagination;
 import com.dogoo.intern.rest.client.resource.v2_0.BlogResource;
 import com.dogoo.intern.rest.client.serdes.v2_0.BlogSerDes;
 
@@ -14,6 +15,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
 
+import com.liferay.petra.function.UnsafeTriConsumer;
 import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.json.JSONArray;
@@ -28,10 +30,12 @@ import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.odata.entity.EntityField;
 import com.liferay.portal.odata.entity.EntityModel;
+import com.liferay.portal.search.test.util.SearchTestRule;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.vulcan.resource.EntityModelResource;
@@ -42,6 +46,8 @@ import java.text.DateFormat;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,6 +59,7 @@ import javax.annotation.Generated;
 
 import javax.ws.rs.core.MultivaluedHashMap;
 
+import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.lang.time.DateUtils;
 
@@ -391,6 +398,235 @@ public abstract class BaseBlogResourceTestCase {
 		throw new UnsupportedOperationException(
 			"This method needs to be implemented");
 	}
+
+	@Test
+	public void testGetAllSearch() throws Exception {
+		Page<Blog> page = blogResource.getAllSearch(
+			null, null, Pagination.of(1, 10), null);
+
+		long totalCount = page.getTotalCount();
+
+		Blog blog1 = testGetAllSearch_addBlog(randomBlog());
+
+		Blog blog2 = testGetAllSearch_addBlog(randomBlog());
+
+		page = blogResource.getAllSearch(
+			null, null, Pagination.of(1, 10), null);
+
+		Assert.assertEquals(totalCount + 2, page.getTotalCount());
+
+		assertContains(blog1, (List<Blog>)page.getItems());
+		assertContains(blog2, (List<Blog>)page.getItems());
+		assertValid(page);
+
+		blogResource.deleteBlog(blog1.getId());
+
+		blogResource.deleteBlog(blog2.getId());
+	}
+
+	@Test
+	public void testGetAllSearchWithFilterDateTimeEquals() throws Exception {
+		List<EntityField> entityFields = getEntityFields(
+			EntityField.Type.DATE_TIME);
+
+		if (entityFields.isEmpty()) {
+			return;
+		}
+
+		Blog blog1 = randomBlog();
+
+		blog1 = testGetAllSearch_addBlog(blog1);
+
+		for (EntityField entityField : entityFields) {
+			Page<Blog> page = blogResource.getAllSearch(
+				null, getFilterString(entityField, "between", blog1),
+				Pagination.of(1, 2), null);
+
+			assertEquals(
+				Collections.singletonList(blog1), (List<Blog>)page.getItems());
+		}
+	}
+
+	@Test
+	public void testGetAllSearchWithFilterStringEquals() throws Exception {
+		List<EntityField> entityFields = getEntityFields(
+			EntityField.Type.STRING);
+
+		if (entityFields.isEmpty()) {
+			return;
+		}
+
+		Blog blog1 = testGetAllSearch_addBlog(randomBlog());
+
+		@SuppressWarnings("PMD.UnusedLocalVariable")
+		Blog blog2 = testGetAllSearch_addBlog(randomBlog());
+
+		for (EntityField entityField : entityFields) {
+			Page<Blog> page = blogResource.getAllSearch(
+				null, getFilterString(entityField, "eq", blog1),
+				Pagination.of(1, 2), null);
+
+			assertEquals(
+				Collections.singletonList(blog1), (List<Blog>)page.getItems());
+		}
+	}
+
+	@Test
+	public void testGetAllSearchWithPagination() throws Exception {
+		Page<Blog> totalPage = blogResource.getAllSearch(
+			null, null, null, null);
+
+		int totalCount = GetterUtil.getInteger(totalPage.getTotalCount());
+
+		Blog blog1 = testGetAllSearch_addBlog(randomBlog());
+
+		Blog blog2 = testGetAllSearch_addBlog(randomBlog());
+
+		Blog blog3 = testGetAllSearch_addBlog(randomBlog());
+
+		Page<Blog> page1 = blogResource.getAllSearch(
+			null, null, Pagination.of(1, totalCount + 2), null);
+
+		List<Blog> blogs1 = (List<Blog>)page1.getItems();
+
+		Assert.assertEquals(blogs1.toString(), totalCount + 2, blogs1.size());
+
+		Page<Blog> page2 = blogResource.getAllSearch(
+			null, null, Pagination.of(2, totalCount + 2), null);
+
+		Assert.assertEquals(totalCount + 3, page2.getTotalCount());
+
+		List<Blog> blogs2 = (List<Blog>)page2.getItems();
+
+		Assert.assertEquals(blogs2.toString(), 1, blogs2.size());
+
+		Page<Blog> page3 = blogResource.getAllSearch(
+			null, null, Pagination.of(1, totalCount + 3), null);
+
+		assertContains(blog1, (List<Blog>)page3.getItems());
+		assertContains(blog2, (List<Blog>)page3.getItems());
+		assertContains(blog3, (List<Blog>)page3.getItems());
+	}
+
+	@Test
+	public void testGetAllSearchWithSortDateTime() throws Exception {
+		testGetAllSearchWithSort(
+			EntityField.Type.DATE_TIME,
+			(entityField, blog1, blog2) -> {
+				BeanUtils.setProperty(
+					blog1, entityField.getName(),
+					DateUtils.addMinutes(new Date(), -2));
+			});
+	}
+
+	@Test
+	public void testGetAllSearchWithSortInteger() throws Exception {
+		testGetAllSearchWithSort(
+			EntityField.Type.INTEGER,
+			(entityField, blog1, blog2) -> {
+				BeanUtils.setProperty(blog1, entityField.getName(), 0);
+				BeanUtils.setProperty(blog2, entityField.getName(), 1);
+			});
+	}
+
+	@Test
+	public void testGetAllSearchWithSortString() throws Exception {
+		testGetAllSearchWithSort(
+			EntityField.Type.STRING,
+			(entityField, blog1, blog2) -> {
+				Class<?> clazz = blog1.getClass();
+
+				String entityFieldName = entityField.getName();
+
+				java.lang.reflect.Method method = clazz.getMethod(
+					"get" + StringUtil.upperCaseFirstLetter(entityFieldName));
+
+				Class<?> returnType = method.getReturnType();
+
+				if (returnType.isAssignableFrom(Map.class)) {
+					BeanUtils.setProperty(
+						blog1, entityFieldName,
+						Collections.singletonMap("Aaa", "Aaa"));
+					BeanUtils.setProperty(
+						blog2, entityFieldName,
+						Collections.singletonMap("Bbb", "Bbb"));
+				}
+				else if (entityFieldName.contains("email")) {
+					BeanUtils.setProperty(
+						blog1, entityFieldName,
+						"aaa" +
+							StringUtil.toLowerCase(
+								RandomTestUtil.randomString()) +
+									"@liferay.com");
+					BeanUtils.setProperty(
+						blog2, entityFieldName,
+						"bbb" +
+							StringUtil.toLowerCase(
+								RandomTestUtil.randomString()) +
+									"@liferay.com");
+				}
+				else {
+					BeanUtils.setProperty(
+						blog1, entityFieldName,
+						"aaa" +
+							StringUtil.toLowerCase(
+								RandomTestUtil.randomString()));
+					BeanUtils.setProperty(
+						blog2, entityFieldName,
+						"bbb" +
+							StringUtil.toLowerCase(
+								RandomTestUtil.randomString()));
+				}
+			});
+	}
+
+	protected void testGetAllSearchWithSort(
+			EntityField.Type type,
+			UnsafeTriConsumer<EntityField, Blog, Blog, Exception>
+				unsafeTriConsumer)
+		throws Exception {
+
+		List<EntityField> entityFields = getEntityFields(type);
+
+		if (entityFields.isEmpty()) {
+			return;
+		}
+
+		Blog blog1 = randomBlog();
+		Blog blog2 = randomBlog();
+
+		for (EntityField entityField : entityFields) {
+			unsafeTriConsumer.accept(entityField, blog1, blog2);
+		}
+
+		blog1 = testGetAllSearch_addBlog(blog1);
+
+		blog2 = testGetAllSearch_addBlog(blog2);
+
+		for (EntityField entityField : entityFields) {
+			Page<Blog> ascPage = blogResource.getAllSearch(
+				null, null, Pagination.of(1, 2),
+				entityField.getName() + ":asc");
+
+			assertEquals(
+				Arrays.asList(blog1, blog2), (List<Blog>)ascPage.getItems());
+
+			Page<Blog> descPage = blogResource.getAllSearch(
+				null, null, Pagination.of(1, 2),
+				entityField.getName() + ":desc");
+
+			assertEquals(
+				Arrays.asList(blog2, blog1), (List<Blog>)descPage.getItems());
+		}
+	}
+
+	protected Blog testGetAllSearch_addBlog(Blog blog) throws Exception {
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Rule
+	public SearchTestRule searchTestRule = new SearchTestRule();
 
 	protected Blog testGraphQLBlog_addBlog() throws Exception {
 		throw new UnsupportedOperationException(

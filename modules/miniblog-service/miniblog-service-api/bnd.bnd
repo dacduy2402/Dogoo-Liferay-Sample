@@ -6,6 +6,7 @@ Export-Package:\
 	com.dogoo.intern.service.model,\
 	com.dogoo.intern.service.service,\
 	com.dogoo.intern.service.mapper.model,\
+	com.dogoo.intern.service.constant,\
 	com.dogoo.intern.service.service.persistence
 -check: EXPORTS
 -includeresource: META-INF/service.xml=../miniblog-service-service/service.xml

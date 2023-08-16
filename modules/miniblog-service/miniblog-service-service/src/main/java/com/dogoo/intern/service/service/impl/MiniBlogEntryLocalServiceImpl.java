@@ -21,6 +21,8 @@ import com.dogoo.intern.service.service.base.MiniBlogEntryLocalServiceBaseImpl;
 import com.liferay.portal.aop.AopService;
 
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.search.Indexable;
+import com.liferay.portal.kernel.search.IndexableType;
 import org.osgi.service.component.annotations.Component;
 
 import java.util.Date;
@@ -46,6 +48,7 @@ public class MiniBlogEntryLocalServiceImpl
 		return miniBlogEntryPersistence.fetchByPrimaryKey(id);
 	}
 
+	@Indexable(type = IndexableType.REINDEX)
 	public MiniBlogEntry addMiniBlog(MiniblogEntryMapper miniblogEntryMapper){
 
 		MiniBlogEntry miniBlogEntry = createMiniBlogEntry(counterLocalService.increment(MiniBlogEntry.class.getName()));
@@ -56,6 +59,7 @@ public class MiniBlogEntryLocalServiceImpl
 		return addMiniBlogEntry(miniBlogEntry);
 	}
 
+	@Indexable(type = IndexableType.REINDEX)
 	public MiniBlogEntry updateMiniBlogById(Long id, MiniblogEntryMapper miniBlogMapper) throws PortalException {
 
 		MiniBlogEntry miniBlogEntry = getMiniBlogEntry(id);
@@ -64,6 +68,7 @@ public class MiniBlogEntryLocalServiceImpl
 		return updateMiniBlogEntry(miniBlogEntry);
 	}
 
+	@Indexable(type = IndexableType.DELETE)
 	public void deleteMiniBlogById(Long id) throws PortalException {
 		deleteMiniBlogEntry(id);
 

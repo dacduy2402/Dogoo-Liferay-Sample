@@ -7,7 +7,11 @@ import com.dogoo.intern.rest.internal.validator.BlogValidator;
 import com.dogoo.intern.rest.resource.v2_0.BlogResource;
 
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.search.Sort;
+import com.liferay.portal.kernel.search.filter.Filter;
+import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.vulcan.pagination.Page;
+import com.liferay.portal.vulcan.pagination.Pagination;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ServiceScope;
@@ -55,6 +59,22 @@ public class BlogResourceImpl extends BaseBlogResourceImpl {
 		miniblogService.deleteMiniBlog(id);
 
 		return Response.ok().build();
+	}
+
+	@Override
+	public Page<Blog> getAllSearch(String search, Filter filter, Pagination pagination, Sort[] sorts) throws Exception {
+
+		return miniblogService.getBlogSearch(search, filter, pagination, sorts, getServiceContext());
+	}
+
+	public ServiceContext getServiceContext() {
+
+		ServiceContext serviceContext = new ServiceContext();
+		serviceContext.setCompanyId(contextCompany.getCompanyId());
+		serviceContext.setUserId(contextUser.getUserId());
+		serviceContext.setScopeGroupId(contextUser.getGroupId());
+
+		return serviceContext;
 	}
 
 	@Reference

@@ -6,11 +6,22 @@ import com.dogoo.intern.service.mapper.model.MiniblogEntryMapper;
 import com.dogoo.intern.service.model.MiniBlogEntry;
 import com.dogoo.intern.service.service.MiniBlogEntryLocalService;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.search.Field;
+import com.liferay.portal.kernel.search.SearchContext;
+import com.liferay.portal.kernel.search.Sort;
+import com.liferay.portal.kernel.search.filter.Filter;
+import com.liferay.portal.kernel.search.filter.TermFilter;
+import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.vulcan.pagination.Page;
+import com.liferay.portal.vulcan.pagination.Pagination;
+import com.liferay.portal.vulcan.util.SearchUtil;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 @Component(
@@ -54,6 +65,32 @@ public class MiniblogService {
     public void deleteMiniBlog(Long id) throws PortalException {
 
         miniBlogEntryLocalService.deleteMiniBlogById(id);
+    }
+
+        public Page<Blog> getBlogSearch(String search,
+                                        Filter filter,
+                                        Pagination pagination,
+                                        Sort[] sorts,
+                                        ServiceContext serviceContext) throws Exception {
+        return SearchUtil.search(
+                Collections.emptyMap(),
+                booleanQuery -> {
+
+                },
+                filter,
+                MiniBlogEntry.class.getName(),
+                search,
+                pagination,
+                queryConfig -> queryConfig.setSelectedFieldNames(Field.ENTRY_CLASS_PK),
+                searchContext -> {
+                    searchContext.setCompanyId(serviceContext.getCompanyId());
+                },
+                sorts,
+                document -> {
+                    long blogId = GetterUtil.getLong(document.get(Field.ENTRY_CLASS_PK));
+                    return miniblogMapper.apply(miniBlogEntryLocalService.getMiniBlogEntry(blogId));
+                }
+        );
     }
 
     @Reference
